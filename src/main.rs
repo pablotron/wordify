@@ -8,38 +8,41 @@ struct Config {
 }
 
 fn main() -> Result<(), std::io::Error> {
-  let re = regex::Regex::new(r"\{\{[\w_-]+\}\}").unwrap(); // init regex
   let mut rng = rand::rng(); // init random number generator
   let mut buf = Vec::new(); // init output buffer
   let config: Config = serde_json::from_reader(std::io::stdin())?; // read config
 
-  // find parameters in template
-  let matches: Vec<_> = re.find_iter(&config.template).collect();
-  if matches.len() > 0 {
-    // loop over matches
-    for (i, m) in matches.clone().into_iter().enumerate() {
-      // write prefix
-      let start = if i > 0 { matches[i - 1].end() } else { 0 }; // get prefix start
-      let prefix = &config.template[start..m.start()]; // get prefix
-      write!(&mut buf, "{prefix}")?; // write prefix
+  let mut pos = 0usize; // position
+  loop {
+    // get prefix length
+    let len = match &config.template[pos..].find("{{") {
+      Some(len) => *len,
+      None => {
+        writeln!(&mut buf, "{}", &config.template[pos..])?; // write rest
+        break; // exit loop
+      },
+    };
 
-      // get parameter key from match, then get possible values
-      let key = &config.template[m.start()+2 .. m.end()-2];
-      let vals = match config.params.get(key) {
-        Some(vals) => vals, // get values
-        None => panic!("unknown key: {key}"), // unknown key
-      };
+    // write prefix, advance position
+    write!(&mut buf, "{}", &config.template[pos..(pos + len)])?; // write prefix
+    pos += len + 2; // advance position
 
-      // write random value
-      write!(&mut buf, "{}", &vals[rng.random_range(0..vals.len())])?;
-    }
+    // get key length
+    let len = match &config.template[pos..].find("}}") {
+      Some(len) => *len,
+      None => panic!("unterminated key in template"),
+    };
 
-    // write suffix and newline
-    let suffix = &config.template[matches[matches.len() - 1].end()..];
-    writeln!(&mut buf, "{suffix}")?;
-  } else {
-    // no matches; write template and newline
-    writeln!(&mut buf, "{}", config.template)?;
+    // get parameter key, then get possible values
+    let key = &config.template[pos..(pos + len)];
+    let vals = match config.params.get(key) {
+      Some(vals) => vals, // get values
+      None => panic!("unknown key: {key}"), // unknown key
+    };
+
+    // write random value, advance position
+    write!(&mut buf, "{}", &vals[rng.random_range(0..vals.len())])?;
+    pos += len + 2; // advance
   }
 
   // write to stdout, return success
