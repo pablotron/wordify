@@ -116,6 +116,7 @@ mod tests {
     }
 
     // tests expected to fail
+    // note: exp is expected error string
     let fail_tests = r#"[{
       "name": "missing key",
       "val": {
