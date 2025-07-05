@@ -46,3 +46,98 @@ impl Template {
     Ok(buf) // return success
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use crate::madlib::Template;
+
+  #[derive(Debug, serde::Deserialize)]
+  struct ExpandTest {
+    name: String, // test name
+    val: Template, // test template
+    exp: String, // expected value
+  }
+
+  #[test]
+  fn test_template_expand() {
+    let mut rng = rand::rng();
+
+    // tests expected to pass
+    let pass_tests = r#"[{
+      "name": "empty",
+      "val": {
+        "string": "",
+        "params": { "foo": ["bar"] }
+      },
+      "exp": "\n"
+    }, {
+      "name": "no params",
+      "val": {
+        "string": "foobar",
+        "params": { "foo": ["bar"] }
+      },
+      "exp": "foobar\n"
+    }, {
+      "name": "suffix",
+      "val": {
+        "string": "{{foo}}bar",
+        "params": { "foo": ["bar"] }
+      },
+      "exp": "barbar\n"
+    }, {
+      "name": "prefix",
+      "val": {
+        "string": "bar{{foo}}",
+        "params": { "foo": ["bar"] }
+      },
+      "exp": "barbar\n"
+    }, {
+      "name": "prefix and suffix",
+      "val": {
+        "string": "bar{{foo}}bar",
+        "params": { "foo": ["bar"] }
+      },
+      "exp": "barbarbar\n"
+    }, {
+      "name": "multiple parameters",
+      "val": {
+        "string": "{{greet}} {{name}}",
+        "params": { "greet": ["hi"], "name": ["paul"] }
+      },
+      "exp": "hi paul\n"
+    }]"#;
+
+    // run pass tests
+    for test in serde_json::from_str::<Vec<ExpandTest>>(pass_tests).unwrap() {
+      match test.val.expand(&mut rng) {
+        Ok(got) => assert_eq!(String::try_from(got).unwrap(), test.exp),
+        Err(err) => panic!("test \"{}\" failed: {}", test.name, err),
+      };
+    }
+
+    // tests expected to fail
+    let fail_tests = r#"[{
+      "name": "missing key",
+      "val": {
+        "string": "{{foo}}",
+        "params": {}
+      },
+      "exp": "unknown key: foo"
+    }, {
+      "name": "unterminated key",
+      "val": {
+        "string": "{{foo",
+        "params": { "foo": ["bar"] }
+      },
+      "exp": "unterminated key in template"
+    }]"#;
+
+    // run fail tests
+    for test in serde_json::from_str::<Vec<ExpandTest>>(fail_tests).unwrap() {
+      match test.val.expand(&mut rng) {
+        Ok(got) => panic!("test \"{}\": got \"{}\", exp error", test.name, String::try_from(got).unwrap()),
+        Err(err) => assert_eq!(err.to_string(), test.exp),
+      };
+    }
+  }
+}
