@@ -3,11 +3,11 @@ mod madlib;
 
 fn main() -> Result<(), std::io::Error> {
   let t: madlib::Template = serde_json::from_reader(std::io::stdin())?; // read template
-  let buf = t.expand(&mut rand::rng())?; // expand template
+  let mut buf = t.expand(&mut rand::rng())?; // expand template
+  if buf.is_empty() || buf[buf.len() - 1] != b'\n' {
+    writeln!(&mut buf)? // write trailing newline
+  }
 
-  let mut stdout = std::io::stdout().lock();
-  stdout.write_all(&buf)?; // write buffer
-  stdout.write_all(b"\n")?; // write newline
-
+  std::io::stdout().lock().write_all(&buf)?; // write buffer
   Ok(()) // return success
 }
