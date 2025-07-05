@@ -6,7 +6,8 @@ fn main() -> Result<(), std::io::Error> {
   let buf = t.expand(&mut rand::rng())?; // expand template
 
   let mut stdout = std::io::stdout().lock();
-  stdout.write_all(&buf)?; // write to stdout
+  stdout.write_all(&buf)?; // write buffer
+  stdout.write_all(b"\n")?; // write newline
 
   Ok(()) // return success
 }
