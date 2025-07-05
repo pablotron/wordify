@@ -16,7 +16,7 @@ impl Template {
       let len = match &self.string[pos..].find("{{") {
         Some(len) => *len,
         None => {
-          writeln!(&mut buf, "{}", &self.string[pos..])?; // write rest
+          write!(&mut buf, "{}", &self.string[pos..])?; // write rest
           break; // exit loop
         },
       };
@@ -69,42 +69,42 @@ mod tests {
         "string": "",
         "params": { "foo": ["bar"] }
       },
-      "exp": "\n"
+      "exp": ""
     }, {
       "name": "no params",
       "val": {
         "string": "foobar",
         "params": { "foo": ["bar"] }
       },
-      "exp": "foobar\n"
+      "exp": "foobar"
     }, {
       "name": "suffix",
       "val": {
         "string": "{{foo}}bar",
         "params": { "foo": ["bar"] }
       },
-      "exp": "barbar\n"
+      "exp": "barbar"
     }, {
       "name": "prefix",
       "val": {
         "string": "bar{{foo}}",
         "params": { "foo": ["bar"] }
       },
-      "exp": "barbar\n"
+      "exp": "barbar"
     }, {
       "name": "prefix and suffix",
       "val": {
         "string": "bar{{foo}}bar",
         "params": { "foo": ["bar"] }
       },
-      "exp": "barbarbar\n"
+      "exp": "barbarbar"
     }, {
       "name": "multiple parameters",
       "val": {
         "string": "{{greet}} {{name}}",
         "params": { "greet": ["hi"], "name": ["paul"] }
       },
-      "exp": "hi paul\n"
+      "exp": "hi paul"
     }]"#;
 
     // run pass tests
