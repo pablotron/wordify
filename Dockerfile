@@ -6,7 +6,7 @@
 # - strip command does shrink binary
 FROM docker.io/rust:1-slim AS build
 
-# install upx (disabled, see above)
+# install upx (disabled, see notes)
 # RUN apt-get update && \
 #     apt-get install upx-ucl && \
 #     apt-get clean
@@ -15,15 +15,21 @@ FROM docker.io/rust:1-slim AS build
 COPY . /src
 WORKDIR /src
 
-# set toolchain and target, then build static binary
+# build steps:
+# 1. set toolchain/target
+# 2. build static binary
+# 3. copy static binary to `/src/wordify`
+#
+# note: step #3 is needed because COPY below won't interpolate $(arch)
 RUN --mount=type=cache,target=/usr/local/rustup \
     --mount=type=cache,target=/usr/local/cargo/registry \
   rustup default stable && \
-  rustup target add x86_64-unknown-linux-musl && \
-  cargo build --release --target x86_64-unknown-linux-musl
+  rustup target add $(arch)-unknown-linux-musl && \
+  cargo build --release --target $(arch)-unknown-linux-musl && \
+  mv target/$(arch)-unknown-linux-musl/release/wordify /src/
 
 # pack binary (disabled, see notes above)
-# RUN ["upx", "/src/target/x86_64-unknown-linux-musl/release/wordify"]
+# RUN ["upx", "/src/target/$(arch)-unknown-linux-musl/release/wordify"]
 
 # run stage
 #
@@ -33,5 +39,5 @@ RUN --mount=type=cache,target=/usr/local/rustup \
 #
 # note: cannot run with `-t` or podman fails with an error
 FROM scratch AS run
-COPY --from=build /src/target/x86_64-unknown-linux-musl/release/wordify /wordify
+COPY --from=build /src/wordify /wordify
 CMD ["/wordify"]
