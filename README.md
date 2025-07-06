@@ -47,26 +47,34 @@ A [JSON schema][] for the templates is available in `schema.json`.
 
 ## Build
 
-Use `cargo build`.  Examples:
+To build Wordify using [Cargo][]:
 
 ```sh
-# create release build in `target/release/wordify`
+# create release binary in `target/release/wordify`
 $ cargo build --release
+```
 
+To create a debug build:
+
+```sh
 # create debug build (used for development)
 $ cargo build
 ```
 
-You can also compile a static binary by adding the necessary with
-[rustup][], like so:
+To create a static binary:
+
+1. Use [rustup][] to add the `musl` target for your architecture.
+2. Pass the target to `cargo build`.
+
+Example:
 
 ```sh
 # install static target with rustup
-$ rustup target add x86_64-unknown-linux-musl
+$ rustup target add $(arch)-unknown-linux-musl
 
-# create static x86-64 linux binary
-# (saved to `target/x86_64-unknown-linux-musl/release/wordify`)
-$ cargo build --release --target x86_64-unknown-linux-musl
+# create static linux binary
+# (saved to `target/$(arch)-unknown-linux-musl/release/wordify`)
+$ cargo build --release --target $(arch)-unknown-linux-musl
 ```
 
 ## Install
@@ -93,6 +101,25 @@ Run `cargo clippy` to run the linter:
 $ cargo clippy
 ```
 
+## Container
+
+Wordify can be built and run as a container image with [Podman][] or
+Docker.
+
+To build the container image:
+
+```sh
+# build wordify container image
+$ podman build -t wordify:latest .
+```
+
+To run the container image with template `examples/hi.json`:
+
+```sh
+# run `wordify:latest` image using template `examples/hi.json`:
+$ podman run --rm -i wordify:latest < examples/hi.json
+```
+
 [mad libs]: https://en.wikipedia.org/wiki/Mad_Libs
   "Mad Libs"
 [json]: https://en.wikipedia.org/wiki/JSON
@@ -103,3 +130,5 @@ $ cargo clippy
   "rustup: Rust installer."
 [json schema]: https://json-schema.org/
   "JSON schema"
+[podman]: https://podman.io
+  "Podman container orchestrator"
