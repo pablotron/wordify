@@ -49,7 +49,7 @@ impl Template {
 
 #[cfg(test)]
 mod tests {
-  use crate::madlib::Template;
+  use crate::wordify::Template;
 
   #[derive(Debug, serde::Deserialize)]
   struct ExpandTest {
