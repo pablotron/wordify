@@ -110,7 +110,7 @@ mod tests {
     // run pass tests
     for test in serde_json::from_str::<Vec<ExpandTest>>(pass_tests).unwrap() {
       match test.val.expand(&mut rng) {
-        Ok(got) => assert_eq!(String::try_from(got).unwrap(), test.exp),
+        Ok(got) => assert_eq!(String::try_from(got).unwrap(), test.exp, "{}", test.name),
         Err(err) => panic!("test \"{}\" failed: {}", test.name, err),
       };
     }
@@ -137,7 +137,7 @@ mod tests {
     for test in serde_json::from_str::<Vec<ExpandTest>>(fail_tests).unwrap() {
       match test.val.expand(&mut rng) {
         Ok(got) => panic!("test \"{}\": got \"{}\", exp error", test.name, String::try_from(got).unwrap()),
-        Err(err) => assert_eq!(err.to_string(), test.exp),
+        Err(err) => assert_eq!(err.to_string(), test.exp, "{}", test.name),
       };
     }
   }
