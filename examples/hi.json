@@ -1,0 +1,7 @@
+{
+  "string": "{{greet}} {{name}}!",
+  "params": {
+    "greet": ["hi", "hello", "howdy"],
+    "name": ["alice", "bob", "paul"]
+  }
+}
