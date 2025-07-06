@@ -1,0 +1,34 @@
+{
+  "$id": "https://pablotron.org/wordify/schema-20250705.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+
+  "type": "object",
+  "description": "Phrase template.",
+
+  "required": ["string", "params"],
+  "additionalProperties": false,
+
+  "properties": {
+    "string": {
+      "type": "string",
+      "description": "Template string.",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+
+    "params": {
+      "type": "object",
+      "description": "Map of template keys to list of possible values.",
+
+      "additionalProperties": {
+        "type": "array",
+        "description": "List of possible parameter values.",
+
+        "items": {
+          "type": "string",
+          "description": "Parameter value."
+        }
+      }
+    }
+  }
+}
